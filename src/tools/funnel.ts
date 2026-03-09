@@ -1,6 +1,11 @@
 import type { EChartsOption, SeriesOption } from "echarts";
 import { z } from "zod";
-import { generateChartImage } from "../utils";
+import {
+  applyCommonStyles,
+  generateChartImage,
+  getAnimationConfig,
+  getColorPalette,
+} from "../utils";
 import {
   HeightSchema,
   OutputTypeSchema,
@@ -50,6 +55,8 @@ export const generateFunnelChartTool = {
       value: item.value,
     }));
 
+    const colors = getColorPalette(theme);
+
     const series: Array<SeriesOption> = [
       {
         type: "funnel",
@@ -63,51 +70,78 @@ export const generateFunnelChartTool = {
         minSize: "0%",
         maxSize: "100%",
         sort: "descending",
-        gap: 2,
+        gap: 4,
         label: {
           show: true,
           position: "inside",
-          fontSize: 12,
+          fontSize: 13,
           color: "#fff",
+          fontWeight: "bold",
         },
         labelLine: {
           length: 10,
           lineStyle: {
             width: 1,
-            type: "solid",
+            type: "solid" as const,
           },
         },
         itemStyle: {
           borderColor: "#fff",
-          borderWidth: 1,
+          borderWidth: 2,
         },
         emphasis: {
           label: {
             fontSize: 16,
+          },
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: "rgba(0, 0, 0, 0.2)",
           },
         },
       },
     ];
 
     const echartsOption: EChartsOption = {
+      color: colors,
       series,
       title: {
-        left: "center",
         text: title,
       },
       tooltip: {
         trigger: "item",
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        borderColor: "#E8E8E8",
+        borderWidth: 1,
+        textStyle: {
+          color: "#333",
+          fontSize: 13,
+        },
+        extraCssText:
+          "box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); border-radius: 8px;",
       },
       legend: {
         left: "center",
         orient: "horizontal",
         bottom: 10,
         data: funnelData.map((item) => item.name),
+        icon: "circle",
+        itemGap: 16,
+        itemWidth: 10,
+        itemHeight: 10,
+        textStyle: {
+          color: "#666",
+          fontSize: 12,
+        },
       },
+      ...getAnimationConfig(),
     };
 
+    // 应用通用样式
+    const styledOption = applyCommonStyles(echartsOption, theme);
+
     return await generateChartImage(
-      echartsOption,
+      styledOption,
       width,
       height,
       theme,

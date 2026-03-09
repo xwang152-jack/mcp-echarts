@@ -1,6 +1,12 @@
 import type { EChartsOption, SeriesOption } from "echarts";
 import { z } from "zod";
-import { generateChartImage } from "../utils";
+import {
+  applyCommonStyles,
+  createGradientColor,
+  generateChartImage,
+  getAnimationConfig,
+  getColorPalette,
+} from "../utils";
 import {
   AxisXTitleSchema,
   AxisYTitleSchema,
@@ -87,6 +93,7 @@ export const generateBarChartTool = {
 
     let series: Array<SeriesOption> = [];
     let categories: string[] = [];
+    const colors = getColorPalette(theme);
 
     if (hasGroups && (group || stack)) {
       // Handle multiple series data (grouped or stacked)
@@ -113,6 +120,7 @@ export const generateBarChartTool = {
       categories = Array.from(categorySet).sort();
 
       // Create series for each group
+      let groupIndex = 0;
       groupMap.forEach((groupData, groupName) => {
         // Create a map for quick lookup
         const dataMap = new Map(groupData.map((d) => [d.category, d.value]));
@@ -120,12 +128,25 @@ export const generateBarChartTool = {
         // Fill values for all categories (0 for missing data)
         const values = categories.map((category) => dataMap.get(category) ?? 0);
 
+        const colorIndex = groupIndex % colors.length;
         series.push({
           data: values,
           name: groupName,
           stack: stack ? "Total" : undefined,
           type: "bar",
+          itemStyle: {
+            color: !stack ? colors[colorIndex] : undefined,
+            borderRadius: stack ? 0 : [4, 4, 0, 0],
+          },
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: colors[colorIndex],
+            },
+          },
         });
+        groupIndex++;
       });
     } else {
       // Handle single series data
@@ -136,6 +157,17 @@ export const generateBarChartTool = {
         {
           data: values,
           type: "bar",
+          itemStyle: {
+            color: colors[0],
+            borderRadius: [4, 4, 0, 0],
+          },
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: colors[0],
+            },
+          },
         },
       ];
     }
@@ -151,7 +183,6 @@ export const generateBarChartTool = {
           : undefined,
       series,
       title: {
-        left: "center",
         text: title,
       },
       tooltip: {
@@ -166,10 +197,14 @@ export const generateBarChartTool = {
         name: axisYTitle,
         type: "value",
       },
+      ...getAnimationConfig(),
     };
 
+    // 应用清新简约风格样式
+    const styledOption = applyCommonStyles(echartsOption, theme);
+
     return await generateChartImage(
-      echartsOption,
+      styledOption,
       width,
       height,
       theme,

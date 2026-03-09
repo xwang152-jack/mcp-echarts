@@ -1,6 +1,11 @@
 import type { EChartsOption, SeriesOption } from "echarts";
 import { z } from "zod";
-import { generateChartImage } from "../utils";
+import {
+  applyCommonStyles,
+  generateChartImage,
+  getAnimationConfig,
+  getColorPalette,
+} from "../utils";
 import {
   HeightSchema,
   OutputTypeSchema,
@@ -132,7 +137,10 @@ export const generateRadarChartTool = {
       ];
     }
 
+    const colors = getColorPalette(theme);
+
     const echartsOption: EChartsOption = {
+      color: colors,
       legend: hasGroups
         ? {
             left: "center",
@@ -147,26 +155,69 @@ export const generateRadarChartTool = {
         axisName: {
           formatter: "{value}",
           color: "#666",
+          fontSize: 12,
         },
         splitArea: {
           areaStyle: {
-            color: ["rgba(250, 250, 250, 0.3)", "rgba(200, 200, 200, 0.3)"],
+            color: ["rgba(94, 206, 206, 0.1)", "rgba(78, 205, 196, 0.1)"],
+          },
+        },
+        axisLine: {
+          lineStyle: {
+            color: "#E8E8E8",
+          },
+        },
+        splitLine: {
+          lineStyle: {
+            color: "#F0F0F0",
+            type: "dashed" as const,
           },
         },
       },
-      series,
+      series: hasGroups
+        ? series.map((s) => ({
+            ...s,
+            lineStyle: {
+              width: 2,
+            },
+            itemStyle: {
+              borderColor: "#fff",
+              borderWidth: 2,
+            },
+            areaStyle: {
+              opacity: 0.3,
+            },
+          }))
+        : series.map((s) => ({
+            ...s,
+            lineStyle: {
+              width: 2,
+              color: colors[0],
+            },
+            itemStyle: {
+              color: colors[0],
+              borderColor: "#fff",
+              borderWidth: 2,
+            },
+            areaStyle: {
+              color: colors[0],
+              opacity: 0.3,
+            },
+          })),
       title: {
-        left: "center",
         text: title,
-        top: "5%",
       },
       tooltip: {
         trigger: "item",
       },
+      ...getAnimationConfig(),
     };
 
+    // 应用通用样式（标题、图例等）
+    const styledOption = applyCommonStyles(echartsOption, theme);
+
     return await generateChartImage(
-      echartsOption,
+      styledOption,
       width,
       height,
       theme,

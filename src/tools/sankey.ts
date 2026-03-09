@@ -1,6 +1,11 @@
 import type { EChartsOption, SeriesOption } from "echarts";
 import { z } from "zod";
-import { generateChartImage } from "../utils";
+import {
+  applyCommonStyles,
+  generateChartImage,
+  getAnimationConfig,
+  getColorPalette,
+} from "../utils";
 import {
   HeightSchema,
   OutputTypeSchema,
@@ -78,6 +83,8 @@ export const generateSankeyChartTool = {
       value: item.value,
     }));
 
+    const colors = getColorPalette(theme);
+
     const series: Array<SeriesOption> = [
       {
         type: "sankey",
@@ -93,29 +100,47 @@ export const generateSankeyChartTool = {
         bottom: "10%",
         label: {
           position: "right",
-          color: "#000",
+          color: "#666",
+          fontSize: 12,
         },
         lineStyle: {
           color: "gradient",
           curveness: 0.5,
+          opacity: 0.3,
+        },
+        itemStyle: {
+          borderWidth: 0,
         },
       },
     ];
 
     const echartsOption: EChartsOption = {
+      color: colors,
       series,
       title: {
-        left: "center",
         text: title,
       },
       tooltip: {
         trigger: "item",
         triggerOn: "mousemove",
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        borderColor: "#E8E8E8",
+        borderWidth: 1,
+        textStyle: {
+          color: "#333",
+          fontSize: 13,
+        },
+        extraCssText:
+          "box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); border-radius: 8px;",
       },
+      ...getAnimationConfig(),
     };
 
+    // 应用通用样式
+    const styledOption = applyCommonStyles(echartsOption, theme);
+
     return await generateChartImage(
-      echartsOption,
+      styledOption,
       width,
       height,
       theme,

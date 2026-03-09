@@ -1,6 +1,11 @@
 import type { EChartsOption, SeriesOption } from "echarts";
 import { z } from "zod";
-import { generateChartImage } from "../utils";
+import {
+  applyCommonStyles,
+  generateChartImage,
+  getAnimationConfig,
+  getColorPalette,
+} from "../utils";
 import {
   AxisXTitleSchema,
   AxisYTitleSchema,
@@ -59,18 +64,26 @@ export const generateScatterChartTool = {
 
     // Transform data for ECharts scatter chart
     const scatterData = data.map((item) => [item.x, item.y]);
+    const colors = getColorPalette(theme);
 
     const series: Array<SeriesOption> = [
       {
         data: scatterData,
         type: "scatter",
-        symbolSize: 8,
+        symbolSize: 10,
+        itemStyle: {
+          color: colors[0],
+          borderColor: "#fff",
+          borderWidth: 2,
+        },
         emphasis: {
           focus: "series",
           itemStyle: {
-            shadowBlur: 10,
+            shadowBlur: 15,
             shadowOffsetX: 0,
-            shadowColor: "rgba(0, 0, 0, 0.5)",
+            shadowColor: colors[0],
+            borderColor: colors[0],
+            borderWidth: 2,
           },
         },
       },
@@ -79,7 +92,6 @@ export const generateScatterChartTool = {
     const echartsOption: EChartsOption = {
       series,
       title: {
-        left: "center",
         text: title,
       },
       tooltip: {
@@ -95,10 +107,14 @@ export const generateScatterChartTool = {
         type: "value",
         scale: true,
       },
+      ...getAnimationConfig(),
     };
 
+    // 应用清新简约风格样式
+    const styledOption = applyCommonStyles(echartsOption, theme);
+
     return await generateChartImage(
-      echartsOption,
+      styledOption,
       width,
       height,
       theme,

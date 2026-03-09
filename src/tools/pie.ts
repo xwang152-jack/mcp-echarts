@@ -1,6 +1,11 @@
 import type { EChartsOption, SeriesOption } from "echarts";
 import { z } from "zod";
-import { generateChartImage } from "../utils";
+import {
+  applyCommonStyles,
+  generateChartImage,
+  getAnimationConfig,
+  getColorPalette,
+} from "../utils";
 import {
   HeightSchema,
   OutputTypeSchema,
@@ -65,40 +70,78 @@ export const generatePieChartTool = {
       value: item.value,
     }));
 
+    const colors = getColorPalette(theme);
+
     const series: Array<SeriesOption> = [
       {
         data: pieData,
-        radius: innerRadius > 0 ? [`${innerRadius * 100}%`, "70%"] : "70%",
+        radius:
+          innerRadius > 0 ? [`${innerRadius * 100}%`, "70%"] : ["40%", "70%"],
         type: "pie",
         emphasis: {
           itemStyle: {
-            shadowBlur: 10,
+            shadowBlur: 15,
             shadowOffsetX: 0,
-            shadowColor: "rgba(0, 0, 0, 0.5)",
+            shadowColor: "rgba(0, 0, 0, 0.3)",
+          },
+          label: {
+            show: true,
+            fontSize: 14,
+            fontWeight: "bold",
+          },
+        },
+        label: {
+          fontSize: 12,
+          color: "#666",
+        },
+        labelLine: {
+          lineStyle: {
+            color: "#E8E8E8",
           },
         },
       },
     ];
 
     const echartsOption: EChartsOption = {
+      color: colors,
       legend: {
         left: "center",
         orient: "horizontal",
         top: "bottom",
+        icon: "circle",
+        itemGap: 16,
+        itemWidth: 10,
+        itemHeight: 10,
+        textStyle: {
+          color: "#666",
+          fontSize: 12,
+        },
       },
       series,
       title: {
-        left: "center",
         text: title,
       },
       tooltip: {
         trigger: "item",
         formatter: "{a} <br/>{b}: {c} ({d}%)",
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        borderColor: "#E8E8E8",
+        borderWidth: 1,
+        textStyle: {
+          color: "#333",
+          fontSize: 13,
+        },
+        extraCssText:
+          "box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); border-radius: 8px;",
       },
+      ...getAnimationConfig(),
     };
 
+    // 应用通用样式（标题等）
+    const styledOption = applyCommonStyles(echartsOption, theme);
+
     return await generateChartImage(
-      echartsOption,
+      styledOption,
       width,
       height,
       theme,

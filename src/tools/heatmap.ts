@@ -1,6 +1,10 @@
 import type { EChartsOption, SeriesOption } from "echarts";
 import { z } from "zod";
-import { generateChartImage } from "../utils";
+import {
+  applyCommonStyles,
+  generateChartImage,
+  getAnimationConfig,
+} from "../utils";
 import {
   AxisXTitleSchema,
   AxisYTitleSchema,
@@ -112,12 +116,19 @@ export const generateHeatmapChartTool = {
       },
       series,
       title: {
-        left: "center",
         text: title,
-        top: "3%",
       },
       tooltip: {
         position: "top",
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        borderColor: "#E8E8E8",
+        borderWidth: 1,
+        textStyle: {
+          color: "#333",
+          fontSize: 13,
+        },
+        extraCssText:
+          "box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); border-radius: 8px;",
       },
       visualMap: {
         min: minValue,
@@ -128,18 +139,18 @@ export const generateHeatmapChartTool = {
         bottom: "15%",
         inRange: {
           color: [
-            "#313695",
-            "#4575b4",
-            "#74add1",
-            "#abd9e9",
-            "#e0f3f8",
-            "#ffffcc",
-            "#fee090",
-            "#fdae61",
-            "#f46d43",
-            "#d73027",
-            "#a50026",
+            "#A8E6CF",
+            "#88D8B0",
+            "#6BCF7F",
+            "#4ECDC4",
+            "#5ECECE",
+            "#45B7AF",
+            "#3BA99A",
           ],
+        },
+        textStyle: {
+          color: "#666",
+          fontSize: 12,
         },
       },
       xAxis: {
@@ -149,6 +160,15 @@ export const generateHeatmapChartTool = {
         splitArea: {
           show: true,
         },
+        axisLine: {
+          lineStyle: {
+            color: "#E8E8E8",
+          },
+        },
+        axisLabel: {
+          color: "#666",
+          fontSize: 12,
+        },
       },
       yAxis: {
         type: "category",
@@ -157,11 +177,24 @@ export const generateHeatmapChartTool = {
         splitArea: {
           show: true,
         },
+        axisLine: {
+          lineStyle: {
+            color: "#E8E8E8",
+          },
+        },
+        axisLabel: {
+          color: "#666",
+          fontSize: 12,
+        },
       },
+      ...getAnimationConfig(),
     };
 
+    // 应用通用样式
+    const styledOption = applyCommonStyles(echartsOption, theme);
+
     return await generateChartImage(
-      echartsOption,
+      styledOption,
       width,
       height,
       theme,

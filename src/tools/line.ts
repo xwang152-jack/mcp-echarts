@@ -1,6 +1,11 @@
 import type { EChartsOption, SeriesOption } from "echarts";
 import { z } from "zod";
-import { generateChartImage } from "../utils";
+import {
+  applyCommonStyles,
+  generateChartImage,
+  getAnimationConfig,
+  getColorPalette,
+} from "../utils";
 import {
   AxisXTitleSchema,
   AxisYTitleSchema,
@@ -167,7 +172,6 @@ export const generateLineChartTool = {
         : undefined,
       series,
       title: {
-        left: "center",
         text: title,
       },
       tooltip: {
@@ -183,10 +187,14 @@ export const generateLineChartTool = {
         name: axisYTitle,
         type: "value",
       },
+      ...getAnimationConfig(),
     };
 
+    // 应用清新简约风格样式
+    const styledOption = applyCommonStyles(echartsOption, theme);
+
     return generateChartImage(
-      echartsOption,
+      styledOption,
       width,
       height,
       theme,

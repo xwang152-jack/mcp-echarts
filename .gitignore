@@ -39,3 +39,11 @@ bun.lock
 
 # Test files
 test-*.js
+
+# Test snapshots and artifacts
+__tests__/snapshots/*-actual.png
+__tests__/snapshots/*-actual.jpg
+__tests__/snapshots/*-actual.jpeg
+__tests__/snapshots/*-diff.png
+__tests__/snapshots/*-diff.jpg
+__tests__/snapshots/*-diff.jpeg

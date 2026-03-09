@@ -1,6 +1,11 @@
 import type { EChartsOption, SeriesOption } from "echarts";
 import { z } from "zod";
-import { generateChartImage } from "../utils";
+import {
+  applyCommonStyles,
+  generateChartImage,
+  getAnimationConfig,
+  getColorPalette,
+} from "../utils";
 import {
   HeightSchema,
   OutputTypeSchema,
@@ -64,8 +69,11 @@ export const generateGaugeChartTool = {
     } = params;
 
     // For multiple gauges, arrange them horizontally
+    const colors = getColorPalette(theme);
     const series: Array<SeriesOption> = data.map((item, index) => {
       const isMultiple = data.length > 1;
+      const colorIndex = index % colors.length;
+      const color = colors[colorIndex];
 
       return {
         name: item.name,
@@ -81,50 +89,59 @@ export const generateGaugeChartTool = {
         endAngle: 0,
         axisLine: {
           lineStyle: {
-            width: 6,
+            width: 8,
             color: [
-              [0.3, "#67e0e3"],
-              [0.7, "#37a2da"],
-              [1, "#fd666d"],
+              [0.3, color],
+              [0.7, color],
+              [1, color],
             ],
           },
         },
         pointer: {
           itemStyle: {
-            color: "inherit",
+            color: color,
           },
         },
         axisTick: {
-          distance: -30,
-          length: 8,
+          distance: -8,
+          length: 5,
+          lineStyle: {
+            color: "#fff",
+            width: 1,
+          },
+        },
+        splitLine: {
+          distance: -8,
+          length: 15,
           lineStyle: {
             color: "#fff",
             width: 2,
           },
         },
-        splitLine: {
-          distance: -30,
-          length: 30,
-          lineStyle: {
-            color: "#fff",
-            width: 4,
-          },
-        },
         axisLabel: {
-          color: "inherit",
-          distance: 40,
+          color: "#666",
+          distance: 20,
           fontSize: isMultiple ? 10 : 12,
         },
         detail: {
           valueAnimation: true,
           formatter: "{value}",
-          color: "inherit",
+          color: color,
           fontSize: isMultiple ? 16 : 20,
           offsetCenter: [0, "30%"],
         },
         title: {
           offsetCenter: [0, "50%"],
           fontSize: isMultiple ? 12 : 14,
+          color: "#666",
+        },
+        progress: {
+          show: true,
+          roundCap: true,
+          clip: false,
+          itemStyle: {
+            color: color,
+          },
         },
       };
     });
@@ -137,18 +154,28 @@ export const generateGaugeChartTool = {
               left: "center",
               orient: "horizontal",
               data: data.map((item) => item.name),
+              textStyle: {
+                color: "#666",
+                fontSize: 12,
+              },
+              icon: "circle",
+              itemGap: 16,
+              itemWidth: 10,
+              itemHeight: 10,
             }
           : undefined,
       series,
       title: {
-        left: "center",
         text: title,
-        top: data.length > 1 ? "5%" : undefined,
       },
+      ...getAnimationConfig(),
     };
 
+    // 应用通用样式（标题等）
+    const styledOption = applyCommonStyles(echartsOption, theme);
+
     return await generateChartImage(
-      echartsOption,
+      styledOption,
       width,
       height,
       theme,
